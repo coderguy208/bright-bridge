@@ -9,9 +9,9 @@ import {
   NotFoundPage,
   VideoComingSoonPage,
 } from '../pages/InfoPages.jsx'
-import JournalPage from '../pages/JournalPage.jsx'
 import LandingPage from '../pages/LandingPage.jsx'
 import LoginPage from '../pages/LoginPage.jsx'
+import { ResourceDetailPage, ResourcesPage, SettingsPage } from '../pages/ResourcePages.jsx'
 
 // Preserve the edit query string when an old deployed HTML URL is opened.
 function LegacyJournalRedirect() {
@@ -25,19 +25,18 @@ function AppRoutes() {
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<LoginPage mode="signup" />} />
       <Route path="/help" element={<HelpPage />} />
       <Route path="/help/relationships/:type" element={<RelationshipHelpPage />} />
-      <Route path="/grounding" element={<ComingSoonPage pageKey="grounding" />} />
-      <Route path="/resources" element={<ComingSoonPage pageKey="resources" />} />
-      <Route path="/conflict" element={<ComingSoonPage pageKey="conflict" />} />
-      <Route path="/microskills" element={<ComingSoonPage pageKey="microskills" />} />
       <Route path="/relationship-quiz" element={<ComingSoonPage pageKey="quiz" />} />
       <Route path="/videos/:topic" element={<VideoComingSoonPage />} />
 
       <Route element={<ProtectedRoute />}>
         <Route path="/home" element={<HomePage />} />
-        <Route path="/journal/today" element={<JournalPage />} />
         <Route path="/daily-checkin" element={<DailyCheckinPage />} />
+        <Route path="/resources" element={<ResourcesPage />} />
+        <Route path="/resources/:id" element={<ResourceDetailPage />} />
+        <Route path="/settings" element={<SettingsPage />} />
       </Route>
 
       <Route path="/index.html" element={<Navigate to="/" replace />} />

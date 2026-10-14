@@ -1,21 +1,10 @@
-import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { QuickExit } from '../components/layout/SharedUI.jsx'
+import { useState } from 'react'
+import { Link } from 'react-router-dom'
+import { AppHeader, MoodGauge } from '../components/layout/SharedUI.jsx'
 import { useAuth } from '../features/auth/authContext.js'
+import { getRecentEntries, getTodayEntry, localDateKey } from '../features/journal/journalApi.js'
 import usePageTitle from '../lib/usePageTitle.js'
-
-function DashboardHeader({ displayName, onLogout }) {
-  const [now, setNow] = useState(() => new Date())
-  useEffect(() => { const timer = window.setInterval(() => setNow(new Date()), 1000); return () => window.clearInterval(timer) }, [])
-  const date = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long', year: 'numeric' }).format(now)
-  const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })
-  return <header className="sunset-header dashboard-sunset-header"><div><time>{time}</time><time>{date}</time></div><h1>BrightBridge</h1><div className="dashboard-welcome">Welcome home,<br />{displayName}!</div><button type="button" className="dashboard-logout" onClick={onLogout}>Log out</button></header>
-}
-
-export default function HomePage() {
-  usePageTitle('Dashboard')
-  const { displayName, logout } = useAuth(); const navigate = useNavigate()
-  async function handleLogout() { await logout(); navigate('/login', { replace: true }) }
-  const dateCard = new Intl.DateTimeFormat(undefined, { day: 'numeric', month: 'long' }).format(new Date())
-  return <div className="dashboard-page page-shell"><DashboardHeader displayName={displayName} onLogout={handleLogout} /><main className="dashboard-main"><h2>Dashboard</h2><section className="dashboard-grid" aria-label="Dashboard navigation"><Link className="dash-tile dash-tile--checkin" to="/daily-checkin">Daily Check-in</Link><div className="dash-date">{dateCard}</div><Link className="dash-tile dash-tile--grounding" to="/grounding">Grounding Tools</Link><Link className="dash-tile dash-tile--conflict" to="/conflict">Conflict De-escalation</Link><Link className="dash-tile dash-tile--micro" to="/microskills">Relationship Microskills</Link><Link className="dash-tile dash-tile--resources" to="/resources">Resources</Link><Link className="dash-tile dash-tile--sos" to="/help">SOS</Link></section></main><QuickExit /></div>
-}
+const resourceLinks = [{ label: 'Grounding Tools', to: '/resources/grounding-tools' }, { label: 'Conflict De-escalation', to: '/resources/conflict-de-escalation' }, { label: 'Relationship Microskills', to: '/resources/relationship-microskills' }]
+function Calendar({ entries }) { const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const days = new Date(year, month + 1, 0).getDate(); const blanks = Array.from({ length: new Date(year, month, 1).getDay() }); const checked = new Set(entries.map((item) => item.date)); return <section className="calendar-card"><h2>{now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h2><div className="calendar-week">{'SMTWTFS'.split('').map((day) => <b key={day}>{day}</b>)}</div><div className="calendar-days">{blanks.map((_, index) => <i key={`blank-${index}`} />)}{Array.from({ length: days }, (_, index) => { const day = index + 1; const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; return <span key={key} className={`${key === localDateKey() ? 'today' : ''}${checked.has(key) ? ' checked' : ''}`}>{day}</span> })}</div></section> }
+function SosModal({ close }) { return <div className="sos-modal" role="dialog" aria-modal="true"><div><h2>You&apos;re not alone.</h2><p>Consider reaching out to someone you trust. In the US, call or text <strong>988</strong> for the Suicide & Crisis Lifeline. Call 911 if there is immediate danger.</p><button onClick={close}>Close</button></div></div> }
+export default function HomePage() { usePageTitle('Dashboard'); const { user } = useAuth(); const today = getTodayEntry(user.id); const entries = getRecentEntries(user.id); const [sos, setSos] = useState(false); const recommended = new Set(today?.resources || []); return <div className="logged-page"><AppHeader /><main className="clean-dashboard"><h1>Dashboard</h1><div className="dashboard-columns"><section className="dash-left"><Link className="daily-card" to="/daily-checkin"><span>Daily Check-in {today ? '✓' : ''}</span><MoodGauge note={today?.content || ''} compact /><small>{today ? 'Completed today' : 'Tap to check in'}</small></Link><div className="dash-icons"><Link to="/resources/grounding-tools">🧠</Link><Link to="/resources/conflict-de-escalation">🗣️</Link><Link to="/resources/relationship-microskills">🤝</Link></div><Link className="orange-link" to="/resources">Resources</Link></section><section className="dash-middle">{resourceLinks.map((item) => <Link key={item.label} className="resource-link" to={item.to}>{item.label}{recommended.has(item.label) && <small>Recommended</small>}</Link>)}<div className="picture-panel">A calm space for your next step.</div></section><aside className="dash-right"><Calendar entries={entries} /><Link className="settings-link" to="/settings">⚙ SETTINGS</Link><button className="sos-button" onClick={() => setSos(true)}>SOS</button></aside></div></main>{sos && <SosModal close={() => setSos(false)} />}</div> }

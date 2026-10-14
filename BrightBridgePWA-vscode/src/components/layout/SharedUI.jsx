@@ -1,4 +1,7 @@
 import { Link } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../../features/auth/authContext.js'
 
 // Preserve the original bridge-and-sun artwork as a scalable inline logo.
 export function BrandLogo() {
@@ -107,4 +110,16 @@ export function StatusMessage({ children, tone = 'info' }) {
       {children}
     </p>
   )
+}
+
+export function AppHeader() {
+  const { displayName, logout } = useAuth(); const navigate = useNavigate(); const [now, setNow] = useState(() => new Date())
+  useEffect(() => { const id = window.setInterval(() => setNow(new Date()), 1000); return () => window.clearInterval(id) }, [])
+  async function leave() { await logout(); navigate('/') }
+  return <header className="app-header"><div className="app-header__date"><time>{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time><time>{now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}</time></div><h1>BrightBridge</h1><div className="app-header__user"><span>Welcome home, {displayName}!</span><button type="button" onClick={leave}>Log out</button></div></header>
+}
+
+export function MoodGauge({ note = '', compact = false }) {
+  const low = /angry|furious|sad|anxious|overwhelmed|hopeless|scared|stressed|lonely/i.test(note); const high = /good|happy|calm|great|grateful|hopeful|proud/i.test(note); const angle = low ? -56 : high ? 56 : 0
+  return <div className={`shared-gauge${compact ? ' shared-gauge--compact' : ''}`}><svg viewBox="0 0 420 250" role="img" aria-label={low ? 'Struggling mood' : high ? 'Positive mood' : 'Neutral mood'}><path className="gauge-segment gauge-segment--red" d="M30 210 A180 180 0 0 1 120 54 L164 126 A96 96 0 0 0 114 210 Z" /><path className="gauge-segment gauge-segment--yellow" d="M120 54 A180 180 0 0 1 300 54 L256 126 A96 96 0 0 0 164 126 Z" /><path className="gauge-segment gauge-segment--green" d="M300 54 A180 180 0 0 1 390 210 L306 210 A96 96 0 0 0 256 126 Z" /><g className="gauge-needle" style={{ transform: `rotate(${angle}deg)` }}><path d="M210 211 L198 91 L222 91 Z" /><circle cx="210" cy="210" r="25" /><circle className="gauge-hub" cx="210" cy="210" r="13" /></g></svg></div>
 }
