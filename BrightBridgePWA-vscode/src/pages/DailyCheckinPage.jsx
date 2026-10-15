@@ -26,11 +26,38 @@ function sendChatMessage(history, note) {
   return 'Thank you for sharing. What feels most important about that moment?'
 }
 
+function CheckinGauge({ value, onChange }) {
+  const selected = value ?? 50
+  const needleAngle = -65 + (selected / 100) * 130
+  const selectedX = 45 + (selected / 100) * 330
+  function setFromPointer(event) {
+    const bounds = event.currentTarget.getBoundingClientRect()
+    onChange(Math.round(Math.max(0, Math.min(100, ((event.clientX - bounds.left) / bounds.width) * 100))))
+  }
+  function keyChange(event) {
+    if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') { event.preventDefault(); onChange(Math.max(0, selected - 5)) }
+    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') { event.preventDefault(); onChange(Math.min(100, selected + 5)) }
+  }
+  return <div className="interactive-gauge">
+    <p id="gauge-label">Choose how you&apos;re feeling</p>
+    <svg viewBox="0 0 420 205" role="slider" aria-labelledby="gauge-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow={selected} tabIndex="0" onKeyDown={keyChange} onPointerDown={setFromPointer} onPointerMove={(event) => event.buttons === 1 && setFromPointer(event)}>
+      <path className="interactive-gauge__low" d="M42 175 A168 168 0 0 1 128 29 L171 105 A80 80 0 0 0 122 175 Z" />
+      <path className="interactive-gauge__mid" d="M128 29 A168 168 0 0 1 292 29 L249 105 A80 80 0 0 0 171 105 Z" />
+      <path className="interactive-gauge__high" d="M292 29 A168 168 0 0 1 378 175 L298 175 A80 80 0 0 0 249 105 Z" />
+      <line className="interactive-gauge__track" x1="45" y1="175" x2="375" y2="175" />
+      <g className="interactive-gauge__needle" style={{ transform: `rotate(${needleAngle}deg)` }}><path d="M210 176 L199 77 L221 77 Z" /><circle cx="210" cy="175" r="23" /><circle cx="210" cy="175" r="11" /></g>
+      <circle className="interactive-gauge__selected" cx={selectedX} cy="175" r="8" />
+    </svg>
+    <span>{value === null ? 'Tap or drag to choose a level' : `${value}% selected`}</span>
+  </div>
+}
+
 export default function DailyCheckinPage() {
   const { user } = useAuth()
   const navigate = useNavigate()
   const saved = getTodayEntry(user.id)
   const [note, setNote] = useState(() => saved?.content || '')
+  const [value, setValue] = useState(() => Number.isFinite(saved?.value) ? saved.value : null)
   const [resources, setResources] = useState(() => saved?.resources ? catalog.filter((item) => saved.resources.includes(item.name)) : null)
   const [chat, setChat] = useState(false)
   const [history, setHistory] = useState([])
@@ -45,9 +72,9 @@ export default function DailyCheckinPage() {
 
   function submit(event) {
     event.preventDefault()
-    if (!note.trim()) { setError('Please write a short note before submitting.'); return }
+    if (value === null) { setError('Please pick a level on the gauge first.'); return }
     const selected = matchedResources(note)
-    saveTodayEntry(user.id, { date: localDateKey(), content: note.trim(), resources: selected.map((item) => item.name) })
+    saveTodayEntry(user.id, { date: localDateKey(), value, text: note.trim(), content: note.trim(), resources: selected.map((item) => item.name) })
     setResources(selected)
     setChat(false)
   }
@@ -78,6 +105,7 @@ export default function DailyCheckinPage() {
       <section className="checkin-card">
         <h1>Daily Check-in</h1>
         <form onSubmit={submit}>
+          <CheckinGauge value={value} onChange={(nextValue) => { setValue(nextValue); setResources(null); setError('') }} />
           <label className="sr-only" htmlFor="checkin-note">How are you feeling?</label>
           <textarea id="checkin-note" value={note} onChange={updateNote} placeholder="let's talk about it!" />
           <div className="checkin-actions">
