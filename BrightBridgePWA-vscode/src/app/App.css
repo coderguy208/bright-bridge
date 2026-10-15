@@ -440,8 +440,9 @@
 .mood-gauge-selector__wedge--red { fill: #9e353a; }
 .mood-gauge-selector__wedge--yellow { fill: #f5c06a; }
 .mood-gauge-selector__wedge--green { fill: #9bca96; }
-.mood-gauge-selector__needle { transform-origin: 220px 220px; fill: #d1d1d1; stroke: #3a2926; stroke-width: 7; stroke-linejoin: round; transition: transform 360ms cubic-bezier(.2, .8, .2, 1); }
-.mood-gauge-selector__needle circle:last-child { fill: #8d8d8d; }
+.mood-gauge-selector__rod { transform-box: view-box; transform-origin: 220px 220px; fill: #d1d1d1; stroke: #3a2926; stroke-width: 7; stroke-linejoin: round; transition: transform 400ms ease; }
+.mood-gauge-selector__hub { fill: #d1d1d1; stroke: #3a2926; stroke-width: 7; }
+.mood-gauge-selector__hub circle:last-child { fill: #8d8d8d; }
 .mood-color-buttons { display: flex; justify-content: center; gap: clamp(1.25rem, 3vw, 3rem); }
 .mood-color-button { width: 72px; height: 72px; padding: 0; border: 3px solid #3a2926; border-radius: 50%; cursor: pointer; transition: transform .2s, box-shadow .2s; }
 .mood-color-button:hover { transform: scale(1.07); }
