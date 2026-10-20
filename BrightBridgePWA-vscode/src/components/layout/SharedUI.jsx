@@ -157,13 +157,13 @@ export function Gauge({ mood, note = '', compact = false, onChange, duration = 7
 
   return <div className={`shared-gauge mood-gauge-selector${compact ? ' shared-gauge--compact' : ''}${onChange ? ' mood-gauge-selector--interactive' : ''}`}>
     <svg viewBox="0 0 440 285" overflow="visible" role="img" aria-label={label}>
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={choose ? () => choose('red') : undefined} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={choose ? () => choose('yellow') : undefined} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={choose ? () => choose('green') : undefined} />
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L220 220 Z" onClick={choose ? () => choose('red') : undefined} />
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L220 220 Z" onClick={choose ? () => choose('yellow') : undefined} />
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L220 220 Z" onClick={choose ? () => choose('green') : undefined} />
       <g transform={`rotate(${angle} ${GAUGE_CENTER_X} ${GAUGE_CENTER_Y})`}>
-        <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 L220 220 Z" />
+        <path className="mood-gauge-selector__rod" d="M196 220 L220 139 L244 220 Z" />
       </g>
-      <g className="mood-gauge-selector__hub"><circle cx="220" cy="220" r="25" /><circle cx="220" cy="220" r="12" /></g>
+      <g className="mood-gauge-selector__hub"><circle cx="220" cy="220" r="28" /><circle cx="220" cy="220" r="12" /></g>
     </svg>
   </div>
 }
