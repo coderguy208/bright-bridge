@@ -11,6 +11,8 @@ const moodFallbacks = {
 }
 
 export function recommendResources({ mood, text = '' }) {
+  if (SHOW_ALL_RESOURCES_FOR_DEV) return ['grounding', 'conflict', 'microskills']
+
   const normalized = text.toLowerCase()
   const matches = Object.entries(keywordGroups)
     .filter(([, keywords]) => keywords.some((keyword) => normalized.includes(keyword)))
@@ -19,3 +21,4 @@ export function recommendResources({ mood, text = '' }) {
   const withRedSupport = mood === 'red' && matches.length ? ['grounding', ...ordered] : ordered
   return [...new Set(withRedSupport)].slice(0, 3)
 }
+export const SHOW_ALL_RESOURCES_FOR_DEV = true
