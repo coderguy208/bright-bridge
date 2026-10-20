@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import {
   MoodSelector,
+  Gauge,
   PageHeader,
   QuickExit,
   StatusMessage,
@@ -15,15 +16,6 @@ const companionReplies = {
   sad: 'That sounds like a lot to carry. You do not have to solve everything at once. What is one small thing that could make the next hour a little gentler?',
   neutral: 'Thank you for checking in with yourself. I am here to listen. What part of your day feels most worth putting into words?',
   happy: 'I love that you made space to notice this bright moment. What helped create this feeling, and how could you bring a little of it into tomorrow?',
-}
-
-function MoodGauge({ mood }) {
-  const position = mood === 'sad' ? 8 : mood === 'neutral' ? 50 : mood === 'happy' ? 92 : 8
-  const label = mood === 'sad' ? 'Low energy' : mood === 'neutral' ? 'Steady' : mood === 'happy' ? 'Feeling bright' : 'Choose a feeling'
-  return <div className="mood-gauge" aria-label={`Mood gauge: ${label}`}>
-    <div className="mood-gauge__track"><span className="mood-gauge__needle" style={{ left: `${position}%` }} /></div>
-    <div className="mood-gauge__labels"><span>Low</span><span>Steady</span><span>High</span></div>
-  </div>
 }
 
 // JournalPage serves both first-use onboarding and editing today's existing entry.
@@ -136,7 +128,7 @@ export default function JournalPage() {
             <h2>How are you feeling today?</h2>
             <p className="checkin-intro">Pick the color that best matches your energy right now.</p>
             <MoodSelector value={mood} onChange={(nextMood) => { setMood(nextMood); setPrompted(false) }} disabled={loading || saving} />
-            <MoodGauge mood={mood} />
+            <Gauge mood={mood === 'sad' ? 'red' : mood === 'happy' ? 'green' : 'yellow'} compact />
           </section>
 
           <section className={`daily-journal soft-card fade-in${companionOpen ? ' daily-journal--raised' : ''}`}>

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/authContext.js'
 
@@ -119,13 +119,40 @@ export function AppHeader() {
   return <header className="app-header"><div className="app-header__date"><time>{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time><time>{now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}</time></div><h1>BrightBridge</h1><div className="app-header__user"><span>Welcome home, {displayName}!</span><button type="button" onClick={leave}>Log out</button></div></header>
 }
 
-export function Gauge({ mood, note = '', compact = false, onChange }) {
+const ANGLES = { red: -60, yellow: 0, green: 60 }
+const GAUGE_CENTER_X = 220
+const GAUGE_CENTER_Y = 220
+
+export function Gauge({ mood, note = '', compact = false, onChange, duration = 700 }) {
   const inferredMood = /angry|furious|sad|anxious|overwhelmed|hopeless|scared|stressed|lonely/i.test(note)
     ? 'red'
     : /good|happy|calm|great|grateful|hopeful|proud/i.test(note) ? 'green' : 'yellow'
   const selectedMood = mood === undefined ? inferredMood : (mood || 'yellow')
-  const angle = { red: -60, yellow: 0, green: 60 }[selectedMood] || 0
+  const target = ANGLES[selectedMood] ?? 0
   const label = { red: 'Struggling mood', yellow: 'Neutral mood', green: 'Positive mood' }[selectedMood]
+  const [angle, setAngle] = useState(target)
+  const angleRef = useRef(target)
+  const frameRef = useRef(null)
+  useEffect(() => {
+    const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const from = angleRef.current
+    if (reduce || from === target) {
+      angleRef.current = target
+      setAngle(target)
+      return undefined
+    }
+    const start = performance.now()
+    const tick = (now) => {
+      const t = Math.min((now - start) / duration, 1)
+      const eased = 1 - Math.pow(1 - t, 3)
+      const next = from + (target - from) * eased
+      angleRef.current = next
+      setAngle(next)
+      if (t < 1) frameRef.current = requestAnimationFrame(tick)
+    }
+    frameRef.current = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frameRef.current)
+  }, [target, duration])
   const choose = onChange ? (nextMood) => onChange(nextMood) : undefined
 
   return <div className={`shared-gauge mood-gauge-selector${compact ? ' shared-gauge--compact' : ''}${onChange ? ' mood-gauge-selector--interactive' : ''}`}>
@@ -133,7 +160,7 @@ export function Gauge({ mood, note = '', compact = false, onChange }) {
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={choose ? () => choose('red') : undefined} />
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={choose ? () => choose('yellow') : undefined} />
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={choose ? () => choose('green') : undefined} />
-      <g className="needle" style={{ transform: `rotate(${angle}deg)`, transformBox: 'view-box', transformOrigin: '220px 220px', transition: 'transform 700ms cubic-bezier(0.34, 1.3, 0.64, 1)' }}>
+      <g transform={`rotate(${angle} ${GAUGE_CENTER_X} ${GAUGE_CENTER_Y})`}>
         <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 L220 220 Z" />
       </g>
       <g className="mood-gauge-selector__hub"><circle cx="220" cy="220" r="25" /><circle cx="220" cy="220" r="12" /></g>
