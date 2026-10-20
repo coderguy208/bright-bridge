@@ -462,6 +462,11 @@
 .checkin-right-column .icon-tiles { justify-content: center; margin: 3rem 0 1rem; }
 .checkin-right-column .icon-tiles a { padding: 0; overflow: hidden; background: #e0a97b; }
 .checkin-right-column .icon-tiles img { display: block; width: 100%; height: 100%; margin: 0; object-fit: cover; }
+.recommendations-slot { width: min(100%, 570px); min-height: 205px; }
+.recommendations { animation: recommendations-fade-in 240ms ease-out both; }
+.recommendations h2 { margin: 1.4rem 0 0; color: var(--primary-purple); font-family: var(--font-serif); font-size: 1.35rem; text-align: center; }
+.recommendations .icon-tiles { margin-top: 1rem; }
+@keyframes recommendations-fade-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .checkin-right-column > p:last-child { margin: 0; text-align: center; }
 .resources-back-button { display: inline-flex; min-height: 55px; align-items: center; justify-content: center; padding: 0 1.4rem; margin-bottom: 1.3rem; color: var(--white); background: var(--primary-coral); border-radius: 999px; font-family: var(--font-serif); font-size: 1.1rem; text-decoration: none; }
 .resources-back-button:hover { filter: brightness(1.06); }
