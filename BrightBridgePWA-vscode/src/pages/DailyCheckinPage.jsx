@@ -17,28 +17,7 @@ function matchedResources(note) {
   return matches.length ? matches : catalog
 }
 
-const moods = {
-  red: { label: 'Red mood', angle: -60 },
-  yellow: { label: 'Yellow mood', angle: 0 },
-  green: { label: 'Green mood', angle: 60 },
-}
-
-function MoodGaugeSelector({ mood, onChange }) {
-  const needleAngle = mood ? moods[mood].angle : 0
-
-  return <div className="mood-gauge-selector" aria-label="Choose how you are feeling">
-    <svg viewBox="0 0 440 285" role="img" aria-label={mood ? `${moods[mood].label} selected` : 'Mood gauge'}>
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={() => onChange('red')} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={() => onChange('yellow')} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={() => onChange('green')} />
-      <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 Z" style={{ transform: `rotate(${needleAngle}deg)` }} />
-      <g className="mood-gauge-selector__hub">
-        <circle cx="220" cy="220" r="25" />
-        <circle cx="220" cy="220" r="12" />
-      </g>
-    </svg>
-  </div>
-}
+const moods = { red: { label: 'Red mood' }, yellow: { label: 'Yellow mood' }, green: { label: 'Green mood' } }
 
 export default function DailyCheckinPage() {
   const { user } = useAuth()
@@ -65,18 +44,12 @@ export default function DailyCheckinPage() {
     setShowPrompts(false)
   }
 
-  const resultText = /angry|furious|sad|anxious|overwhelmed|hopeless|scared|stressed|lonely/i.test(note)
-    ? 'You may need extra support today.'
-    : /good|happy|calm|great|grateful|hopeful|proud/i.test(note)
-      ? 'A positive check-in.'
-      : 'A steady check-in.'
-
   return <div className="logged-page">
     <AppHeader />
     <main className="checkin-demo">
       <div className="checkin-layout-v2">
       <section className="checkin-left-column">
-        <MoodGaugeSelector mood={mood} onChange={(nextMood) => { setMood(nextMood); setResources(null); setError('') }} />
+        <MoodGauge mood={mood} onChange={(nextMood) => { setMood(nextMood); setResources(null); setError('') }} />
         <h1>Daily Check-in</h1>
         <p className="checkin-feeling">how are you feeling?</p>
         <div className="mood-color-buttons" role="group" aria-label="Mood selection">
@@ -103,7 +76,6 @@ export default function DailyCheckinPage() {
         </form>
         {danger.test(note) && <p className="safety">You deserve support right now. Please reach out to someone you trust, call or text <strong>988</strong> in the US, or contact emergency services. <Link to="/help">SOS resources</Link></p>}
         {resources && <>
-          <div className="gauge-result"><MoodGauge note={note} compact /><span>{resultText}</span></div>
           <div className="resource-cards">{resources.map((item) => <Link key={item.name} to={item.to}>{item.name}</Link>)}</div>
           <Link className="continue" to="/home">Continue to dashboard</Link>
         </>}
