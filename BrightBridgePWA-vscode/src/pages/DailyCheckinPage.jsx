@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { AppHeader, MoodGauge } from '../components/layout/SharedUI.jsx'
+import { AppHeader, Gauge } from '../components/layout/SharedUI.jsx'
 import { useAuth } from '../features/auth/authContext.js'
 import { getTodayEntry, localDateKey, saveTodayEntry } from '../features/journal/journalApi.js'
 
@@ -49,7 +49,7 @@ export default function DailyCheckinPage() {
     <main className="checkin-demo">
       <div className="checkin-layout-v2">
       <section className="checkin-left-column">
-        <MoodGauge mood={mood} onChange={(nextMood) => { setMood(nextMood); setResources(null); setError('') }} />
+        <Gauge mood={mood} onChange={(nextMood) => { setMood(nextMood); setResources(null); setError('') }} />
         <h1>Daily Check-in</h1>
         <p className="checkin-feeling">how are you feeling?</p>
         <div className="mood-color-buttons" role="group" aria-label="Mood selection">

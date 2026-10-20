@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/authContext.js'
 
@@ -119,21 +119,27 @@ export function AppHeader() {
   return <header className="app-header"><div className="app-header__date"><time>{now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}</time><time>{now.toLocaleDateString(undefined, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' })}</time></div><h1>BrightBridge</h1><div className="app-header__user"><span>Welcome home, {displayName}!</span><button type="button" onClick={leave}>Log out</button></div></header>
 }
 
-export function MoodGauge({ mood, note = '', compact = false, onChange }) {
+export function Gauge({ mood, note = '', compact = false, onChange }) {
   const inferredMood = /angry|furious|sad|anxious|overwhelmed|hopeless|scared|stressed|lonely/i.test(note)
     ? 'red'
     : /good|happy|calm|great|grateful|hopeful|proud/i.test(note) ? 'green' : 'yellow'
   const selectedMood = mood === undefined ? inferredMood : (mood || 'yellow')
   const angle = { red: -60, yellow: 0, green: 60 }[selectedMood] || 0
   const label = { red: 'Struggling mood', yellow: 'Neutral mood', green: 'Positive mood' }[selectedMood]
-  const choose = (nextMood) => onChange?.(nextMood)
+  const previousAngle = useRef(angle)
+  const fromAngle = previousAngle.current
+  useEffect(() => { previousAngle.current = angle }, [angle])
+  const choose = onChange ? (nextMood) => onChange(nextMood) : undefined
 
-  return <div className={`shared-gauge mood-gauge-selector${compact ? ' shared-gauge--compact' : ''}`}>
-    <svg viewBox="0 0 440 285" role="img" aria-label={label}>
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={() => choose('red')} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={() => choose('yellow')} />
-      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={() => choose('green')} />
-      <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 Z" style={{ transform: `rotate(${angle}deg)` }} />
+  return <div className={`shared-gauge mood-gauge-selector${compact ? ' shared-gauge--compact' : ''}${onChange ? ' mood-gauge-selector--interactive' : ''}`}>
+    <svg viewBox="0 0 440 285" overflow="visible" role="img" aria-label={label}>
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={choose ? () => choose('red') : undefined} />
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={choose ? () => choose('yellow') : undefined} />
+      <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={choose ? () => choose('green') : undefined} />
+      <g transform={`rotate(${angle} 220 220)`}>
+        {fromAngle !== angle && <animateTransform key={`${fromAngle}-${angle}`} attributeName="transform" type="rotate" from={`${fromAngle} 220 220`} to={`${angle} 220 220`} dur="0.4s" fill="freeze" />}
+        <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 L220 220 Z" />
+      </g>
       <g className="mood-gauge-selector__hub"><circle cx="220" cy="220" r="25" /><circle cx="220" cy="220" r="12" /></g>
     </svg>
   </div>
