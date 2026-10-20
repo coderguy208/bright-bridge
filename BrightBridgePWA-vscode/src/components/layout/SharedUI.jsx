@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../features/auth/authContext.js'
 
@@ -126,9 +126,6 @@ export function Gauge({ mood, note = '', compact = false, onChange }) {
   const selectedMood = mood === undefined ? inferredMood : (mood || 'yellow')
   const angle = { red: -60, yellow: 0, green: 60 }[selectedMood] || 0
   const label = { red: 'Struggling mood', yellow: 'Neutral mood', green: 'Positive mood' }[selectedMood]
-  const previousAngle = useRef(angle)
-  const fromAngle = previousAngle.current
-  useEffect(() => { previousAngle.current = angle }, [angle])
   const choose = onChange ? (nextMood) => onChange(nextMood) : undefined
 
   return <div className={`shared-gauge mood-gauge-selector${compact ? ' shared-gauge--compact' : ''}${onChange ? ' mood-gauge-selector--interactive' : ''}`}>
@@ -136,8 +133,7 @@ export function Gauge({ mood, note = '', compact = false, onChange }) {
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--red" d="M40 220 A180 180 0 0 1 130 64 L177 145 A88 88 0 0 0 132 220 Z" onClick={choose ? () => choose('red') : undefined} />
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--yellow" d="M130 64 A180 180 0 0 1 310 64 L263 145 A88 88 0 0 0 177 145 Z" onClick={choose ? () => choose('yellow') : undefined} />
       <path className="mood-gauge-selector__wedge mood-gauge-selector__wedge--green" d="M310 64 A180 180 0 0 1 400 220 L308 220 A88 88 0 0 0 263 145 Z" onClick={choose ? () => choose('green') : undefined} />
-      <g transform={`rotate(${angle} 220 220)`}>
-        {fromAngle !== angle && <animateTransform key={`${fromAngle}-${angle}`} attributeName="transform" type="rotate" from={`${fromAngle} 220 220`} to={`${angle} 220 220`} dur="0.4s" fill="freeze" />}
+      <g className="needle" style={{ transform: `rotate(${angle}deg)`, transformBox: 'view-box', transformOrigin: '220px 220px', transition: 'transform 700ms cubic-bezier(0.34, 1.3, 0.64, 1)' }}>
         <path className="mood-gauge-selector__rod" d="M220 220 L207 83 L233 83 L220 220 Z" />
       </g>
       <g className="mood-gauge-selector__hub"><circle cx="220" cy="220" r="25" /><circle cx="220" cy="220" r="12" /></g>
