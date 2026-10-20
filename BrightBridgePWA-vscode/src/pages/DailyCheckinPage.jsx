@@ -3,6 +3,9 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AppHeader, Gauge } from '../components/layout/SharedUI.jsx'
 import { useAuth } from '../features/auth/authContext.js'
 import { getTodayEntry, localDateKey, saveTodayEntry } from '../features/journal/journalApi.js'
+import groundingToolsImg from '../assets/icons/grounding-tools.png'
+import conflictDeescalationImg from '../assets/icons/conflict-deescalation.png'
+import relationshipMicroskillsImg from '../assets/icons/relationship-microskills.png'
 
 const catalog = [
   { name: 'Grounding Tools', to: '/resources/grounding-tools', words: ['sad', 'down', 'anxious', 'overwhelmed', 'stressed', 'panicking', 'scared', "can't sleep"] },
@@ -80,9 +83,9 @@ export default function DailyCheckinPage() {
           <Link className="continue" to="/home">Continue to dashboard</Link>
         </>}
         <div className="icon-tiles">
-          <Link to="/resources/grounding-tools" aria-label="Grounding Tools">🧠</Link>
-          <Link to="/resources/conflict-de-escalation" aria-label="Conflict De-escalation">🗣️</Link>
-          <Link to="/resources/relationship-microskills" aria-label="Relationship Microskills">🤝</Link>
+          <Link to="/resources/grounding-tools" aria-label="Grounding Tools"><img src={groundingToolsImg} alt="Grounding Tools" width="272" height="266" /></Link>
+          <Link to="/resources/conflict-de-escalation" aria-label="Conflict De-escalation"><img src={conflictDeescalationImg} alt="Conflict De-escalation" width="322" height="290" /></Link>
+          <Link to="/resources/relationship-microskills" aria-label="Relationship Microskills"><img src={relationshipMicroskillsImg} alt="Relationship Microskills" width="296" height="338" /></Link>
         </div>
         <p>After submitting the check-in, applicable resources will appear from the resources catalog.</p>
       </section>
