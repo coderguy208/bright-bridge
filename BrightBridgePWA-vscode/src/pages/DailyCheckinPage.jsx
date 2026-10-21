@@ -3,11 +3,12 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AppHeader, Gauge } from '../components/layout/SharedUI.jsx'
 import { useAuth } from '../features/auth/authContext.js'
 import { getTodayEntry, localDateKey, saveTodayEntry } from '../features/journal/journalApi.js'
-import groundingToolsImg from '../assets/icons/grounding-tools.png'
-import conflictDeescalationImg from '../assets/icons/conflict-deescalation.png'
-import relationshipMicroskillsImg from '../assets/icons/relationship-microskills.png'
 import { recommendResources } from '../utils/recommendResources.js'
+import { resourceIcons } from '../utils/resourceIcons.js'
 
+const { src: groundingToolsImg } = resourceIcons.grounding
+const { src: conflictDeescalationImg } = resourceIcons.conflict
+const { src: relationshipMicroskillsImg } = resourceIcons.microskills
 const resourceTiles = [
   { id: 'grounding', name: 'Grounding Tools', to: '/resources/grounding-tools', image: groundingToolsImg, width: 272, height: 266 },
   { id: 'conflict', name: 'Conflict De-escalation', to: '/resources/conflict-de-escalation', image: conflictDeescalationImg, width: 322, height: 290 },
