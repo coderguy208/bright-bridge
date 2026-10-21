@@ -460,6 +460,7 @@
 .checkin-right-column textarea:focus { outline: 3px solid var(--primary-purple); outline-offset: 3px; }
 .checkin-right-column .checkin-actions { display: grid; grid-template-columns: 60px minmax(0, 1fr) 120px; align-items: center; gap: 1.25rem; margin: 1.5rem 0 .6rem; }
 .checkin-right-column .checkin-actions button { min-height: 55px; color: var(--white); background: var(--primary-purple); border: 0; border-radius: 999px; font-family: var(--font-serif); font-size: 1.1rem; cursor: pointer; }
+.checkin-right-column .checkin-actions button:disabled { opacity: 1; }
 .checkin-right-column .checkin-actions button:first-child { width: 60px; border-radius: 50%; font-size: 2rem; }
 .checkin-right-column .checkin-actions button:last-child { background: var(--primary-coral); }
 .checkin-right-column .auth-error { margin: .6rem 0 0; text-align: left; }

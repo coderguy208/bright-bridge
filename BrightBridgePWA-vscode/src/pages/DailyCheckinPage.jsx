@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { AppHeader, Gauge } from '../components/layout/SharedUI.jsx'
 import { useAuth } from '../features/auth/authContext.js'
@@ -28,6 +28,11 @@ export default function DailyCheckinPage() {
   const [hasSubmitted, setHasSubmitted] = useState(false)
   const [showPrompts, setShowPrompts] = useState(false)
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const submitLockRef = useRef(false)
+  const submitUnlockTimerRef = useRef(null)
+
+  useEffect(() => () => clearTimeout(submitUnlockTimerRef.current), [])
 
   function updateNote(event) {
     setNote(event.target.value)
@@ -38,13 +43,27 @@ export default function DailyCheckinPage() {
 
   function submit(event) {
     event.preventDefault()
+    if (submitLockRef.current) return
+    if (hasSubmitted) { navigate('/home'); return }
     if (!mood) { setError('Please pick how you are feeling first.'); return }
-    const selectedIds = recommendResources({ mood, text: note })
-    const selected = selectedIds.map((id) => resourceTiles.find((tile) => tile.id === id))
-    saveTodayEntry(user.id, { mood, text: note.trim(), date: localDateKey(), content: note.trim(), resources: selected.map((item) => item.name) })
-    setRecommendedIds(selectedIds)
-    setHasSubmitted(true)
-    setShowPrompts(false)
+    setError('')
+    submitLockRef.current = true
+    setIsSubmitting(true)
+    try {
+      const selectedIds = recommendResources({ mood, text: note })
+      const selected = selectedIds.map((id) => resourceTiles.find((tile) => tile.id === id))
+      saveTodayEntry(user.id, { mood, text: note.trim(), date: localDateKey(), content: note.trim(), resources: selected.map((item) => item.name) })
+      setRecommendedIds(selectedIds)
+      setHasSubmitted(true)
+      setShowPrompts(false)
+    } catch {
+      setError('Unable to save your check-in. Please try again.')
+    } finally {
+      submitUnlockTimerRef.current = setTimeout(() => {
+        submitLockRef.current = false
+        setIsSubmitting(false)
+      }, 400)
+    }
   }
 
   return <div className="logged-page">
@@ -72,7 +91,7 @@ export default function DailyCheckinPage() {
           <textarea id="checkin-note" value={note} onChange={updateNote} placeholder="let's talk about it!" />
           <div className="checkin-actions">
             <button type="button" onClick={() => setShowPrompts((open) => !open)} aria-expanded={showPrompts} aria-controls="checkin-prompts">?</button>
-            <button type="submit">SUBMIT</button>
+            <button type="submit" disabled={isSubmitting}>SUBMIT</button>
             <button type="button" onClick={() => { setHasSubmitted(false); setRecommendedIds([]); navigate('/home') }}>BACK</button>
           </div>
           {error && <p className="auth-error" role="alert">{error}</p>}
