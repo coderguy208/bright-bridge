@@ -5,8 +5,119 @@ import { useAuth } from '../features/auth/authContext.js'
 import { getRecentEntries, getTodayEntry, localDateKey, subscribeToCheckins } from '../features/journal/journalApi.js'
 import usePageTitle from '../lib/usePageTitle.js'
 import { resourceIcons } from '../utils/resourceIcons.js'
-const resourceLinks = [{ label: 'Grounding Tools', to: '/resources/grounding-tools' }, { label: 'Conflict De-escalation', to: '/resources/conflict-de-escalation' }, { label: 'Relationship Microskills', to: '/resources/relationship-microskills' }]
-function Calendar({ entries }) { const now = new Date(); const year = now.getFullYear(); const month = now.getMonth(); const days = new Date(year, month + 1, 0).getDate(); const blanks = Array.from({ length: new Date(year, month, 1).getDay() }); const checked = new Set(entries.map((item) => item.date)); return <section className="calendar-card"><h2>{now.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}</h2><div className="calendar-week">{'SMTWTFS'.split('').map((day) => <b key={day}>{day}</b>)}</div><div className="calendar-days">{blanks.map((_, index) => <i key={`blank-${index}`} />)}{Array.from({ length: days }, (_, index) => { const day = index + 1; const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; return <span key={key} className={`${key === localDateKey() ? 'today' : ''}${checked.has(key) ? ' checked' : ''}`}>{day}</span> })}</div></section> }
-function DashboardIconTiles() { const tiles = [{ id: 'grounding', to: '/resources/grounding-tools' }, { id: 'conflict', to: '/resources/conflict-deescalation' }, { id: 'microskills', to: '/resources/relationship-microskills' }]; return <div className="dash-icons">{tiles.map(({ id, to }) => { const icon = resourceIcons[id]; return <Link key={id} to={to}><img src={icon.src} alt={icon.alt} width={icon.width} height={icon.height} /></Link> })}</div> }
-function SosModal({ close }) { return <div className="sos-modal" role="dialog" aria-modal="true"><div><h2>You&apos;re not alone.</h2><p>Consider reaching out to someone you trust. In the US, call or text <strong>988</strong> for the Suicide & Crisis Lifeline. Call 911 if there is immediate danger.</p><button onClick={close}>Close</button></div></div> }
-export default function HomePage() { usePageTitle('Dashboard'); const { user } = useAuth(); const [, setCheckinVersion] = useState(0); useEffect(() => subscribeToCheckins(user.id, () => setCheckinVersion((version) => version + 1)), [user.id]); const today = getTodayEntry(user.id); const entries = getRecentEntries(user.id); const [sos, setSos] = useState(false); const recommended = new Set(today?.resources || []); return <div className="logged-page"><AppHeader /><main className="clean-dashboard"><h1>Dashboard</h1><div className="dashboard-columns"><section className="dash-left"><Link className="daily-card" to="/daily-checkin"><span>Daily Check-in {today ? '✓' : ''}</span><Gauge mood={today?.mood} note={today?.content || ''} compact /><small>{today ? 'Completed today' : 'Tap to check in'}</small></Link><DashboardIconTiles /><Link className="orange-link" to="/resources">Resources</Link></section><section className="dash-middle">{resourceLinks.map((item) => <Link key={item.label} className="resource-link" to={item.to}>{item.label}{recommended.has(item.label) && <small>Recommended</small>}</Link>)}<div className="picture-panel">A calm space for your next step.</div></section><aside className="dash-right"><Calendar entries={entries} /><Link className="settings-link" to="/settings">⚙ SETTINGS</Link><button className="sos-button" onClick={() => setSos(true)}>SOS</button></aside></div></main>{sos && <SosModal close={() => setSos(false)} />}</div> }
+import calmRoomImg from '../assets/icons/calm-room.png'
+
+export const SHOW_SAMPLE_CALENDAR_FOR_DEV = true
+
+const resourceLinks = [
+  { label: 'Grounding Tools', to: '/resources/grounding-tools', tone: 'grounding' },
+  { label: 'Conflict De-escalation', to: '/resources/conflict-deescalation', tone: 'conflict' },
+  { label: 'Relationship Microskills', to: '/resources/relationship-microskills', tone: 'microskills' },
+]
+
+const dashboardResourceTiles = [
+  { id: 'grounding', to: '/resources/grounding-tools' },
+  { id: 'conflict', to: '/resources/conflict-deescalation' },
+  { id: 'microskills', to: '/resources/relationship-microskills' },
+]
+
+function dateKeyDaysAgo(daysAgo) {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return localDateKey(date)
+}
+
+function sampleCalendarEntries() {
+  const moods = ['green', 'yellow', 'green', 'red', 'yellow', 'green', 'green', 'yellow']
+  return Array.from({ length: 28 }, (_, index) => {
+    const daysAgo = 27 - index
+    const inCurrentStreak = daysAgo < 9
+    const scatteredCheckin = [11, 14, 18, 21, 25].includes(daysAgo)
+    return inCurrentStreak || scatteredCheckin
+      ? { date: dateKeyDaysAgo(daysAgo), mood: moods[index % moods.length] }
+      : null
+  }).filter(Boolean)
+}
+
+function CalendarCheck({ mood }) {
+  return <div className={`streak-day${mood ? ' streak-day--complete' : ''}`}>
+    {mood && <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" /><path d="M10 18 L16 24 L27 11" /></svg>}
+    {mood && <span className={`streak-mood streak-mood--${mood}`} />}
+  </div>
+}
+
+function streakLength(entries) {
+  const checkedDates = new Set(entries.map((entry) => entry.date))
+  let offset = checkedDates.has(dateKeyDaysAgo(0)) ? 0 : 1
+  let count = 0
+  while (checkedDates.has(dateKeyDaysAgo(offset))) { count += 1; offset += 1 }
+  return count
+}
+
+function StreakCalendar({ entries }) {
+  const mergedEntries = new Map(SHOW_SAMPLE_CALENDAR_FOR_DEV ? sampleCalendarEntries().map((entry) => [entry.date, entry]) : [])
+  entries.forEach((entry) => mergedEntries.set(entry.date, entry))
+  const days = Array.from({ length: 28 }, (_, index) => mergedEntries.get(dateKeyDaysAgo(27 - index)))
+  const streak = streakLength(Array.from(mergedEntries.values()))
+  const month = new Date().toLocaleDateString(undefined, { month: 'long' })
+  return <section className="streak-calendar" aria-label="Check-in streak calendar">
+    <div className="streak-rings" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
+    <header className="streak-calendar__header"><button type="button">VIEW DETAILS</button><h2>{month}</h2></header>
+    <div className="streak-calendar__days">{days.map((entry, index) => <CalendarCheck key={dateKeyDaysAgo(27 - index)} mood={entry?.mood} />)}</div>
+    <footer><strong>{streak}-Day Streak!</strong>{streak >= 3 && <span>YOU&apos;RE KILLING IT</span>}</footer>
+  </section>
+}
+
+function DashboardIconTiles() {
+  return <div className="dash-icons">{dashboardResourceTiles.map(({ id, to }) => {
+    const icon = resourceIcons[id]
+    return <Link key={id} to={to}><img src={icon.src} alt={icon.alt} width={icon.width} height={icon.height} /></Link>
+  })}</div>
+}
+
+function Checkmark({ complete }) {
+  return <span className={`daily-card__check ${complete ? 'daily-card__check--complete' : ''}`} aria-hidden="true">{complete && '✓'}</span>
+}
+
+function SosModal({ close }) {
+  return <div className="sos-modal" role="dialog" aria-modal="true"><div><h2>You&apos;re not alone.</h2><p>Consider reaching out to someone you trust. In the US, call or text <strong>988</strong> for the Suicide & Crisis Lifeline. Call 911 if there is immediate danger.</p><button onClick={close}>Close</button></div></div>
+}
+
+export default function HomePage() {
+  usePageTitle('Dashboard')
+  const { user } = useAuth()
+  const [, setCheckinVersion] = useState(0)
+  const [sos, setSos] = useState(false)
+  useEffect(() => subscribeToCheckins(user.id, () => setCheckinVersion((version) => version + 1)), [user.id])
+  const today = getTodayEntry(user.id)
+  const entries = getRecentEntries(user.id)
+
+  return <div className="logged-page dashboard-page-v2">
+    <AppHeader />
+    <main className="dashboard-v2">
+      <h1>Dashboard</h1>
+      <div className="dashboard-v2__columns">
+        <section className="dashboard-v2__left">
+          <Link className="daily-card daily-card--v2" to="/daily-checkin">
+            <span>Daily Check-in</span><Checkmark complete={Boolean(today)} />
+            <Gauge mood={today?.mood} note={today?.content || ''} compact />
+            <small className="sr-only">{today ? 'Completed today' : 'Tap to check in'}</small>
+          </Link>
+          <DashboardIconTiles />
+          <Link className="orange-link dashboard-resources" to="/resources">Resources</Link>
+        </section>
+
+        <section className="dashboard-v2__middle">
+          <div className="dashboard-resource-links">{resourceLinks.map((item) => <Link key={item.label} className={`resource-link resource-link--${item.tone}`} to={item.to}>{item.label}</Link>)}</div>
+          <div className="picture-panel picture-panel--room"><img src={calmRoomImg} alt="Cozy room with a sunset window, bookshelf, armchair, plant, and a small character" width="644" height="268" /></div>
+        </section>
+
+        <aside className="dashboard-v2__right">
+          <StreakCalendar entries={entries} />
+          <div className="dashboard-controls"><Link className="settings-link settings-link--v2" to="/settings"><span>SETTINGS</span><i aria-hidden="true">⚙</i></Link><button className="sos-button sos-button--v2" onClick={() => setSos(true)}>SOS</button></div>
+        </aside>
+      </div>
+    </main>
+    {sos && <SosModal close={() => setSos(false)} />}
+  </div>
+}
