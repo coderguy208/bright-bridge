@@ -10,10 +10,11 @@ const { src: groundingToolsImg } = resourceIcons.grounding
 const { src: conflictDeescalationImg } = resourceIcons.conflict
 const { src: relationshipMicroskillsImg } = resourceIcons.microskills
 const resourceTiles = [
-  { id: 'grounding', name: 'Grounding Tools', to: '/resources/grounding-tools', image: groundingToolsImg, width: 272, height: 266 },
+  { id: 'grounding', name: 'Grounding Tools', to: resourceIcons.grounding.to, image: groundingToolsImg, width: 272, height: 266 },
   { id: 'conflict', name: 'Conflict De-escalation', to: '/resources/conflict-de-escalation', image: conflictDeescalationImg, width: 322, height: 290 },
   { id: 'microskills', name: 'Relationship Microskills', to: '/resources/relationship-microskills', image: relationshipMicroskillsImg, width: 296, height: 338 },
 ]
+resourceTiles.forEach((tile) => { tile.to = resourceIcons[tile.id].to })
 const danger = /suicide|kill myself|hurt myself|self harm|harm myself|hurt (him|her|them)|kill (him|her|them)/i
 
 const moods = { red: { label: 'Red mood' }, yellow: { label: 'Yellow mood' }, green: { label: 'Green mood' } }

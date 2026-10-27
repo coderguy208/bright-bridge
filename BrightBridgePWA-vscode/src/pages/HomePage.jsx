@@ -20,6 +20,8 @@ const dashboardResourceTiles = [
   { id: 'conflict', to: '/resources/conflict-deescalation' },
   { id: 'microskills', to: '/resources/relationship-microskills' },
 ]
+resourceLinks.forEach((resource) => { resource.to = resourceIcons[resource.tone].to })
+dashboardResourceTiles.forEach((resource) => { resource.to = resourceIcons[resource.id].to })
 
 function dateKeyDaysAgo(daysAgo) {
   const date = new Date()
