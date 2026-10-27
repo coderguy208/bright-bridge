@@ -54,16 +54,23 @@ function streakLength(entries) {
   return count
 }
 
-function StreakCalendar({ entries }) {
+function StreakCalendar({ entries, now }) {
   const mergedEntries = new Map(SHOW_SAMPLE_CALENDAR_FOR_DEV ? sampleCalendarEntries().map((entry) => [entry.date, entry]) : [])
   entries.forEach((entry) => mergedEntries.set(entry.date, entry))
-  const days = Array.from({ length: 28 }, (_, index) => mergedEntries.get(dateKeyDaysAgo(27 - index)))
   const streak = streakLength(Array.from(mergedEntries.values()))
-  const month = new Date().toLocaleDateString(undefined, { month: 'long' })
+  const year = now.getFullYear()
+  const monthIndex = now.getMonth()
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate()
+  const firstWeekday = new Date(year, monthIndex, 1).getDay()
+  const month = now.toLocaleDateString(undefined, { month: 'long' })
+  const days = Array.from({ length: daysInMonth }, (_, index) => {
+    const date = new Date(year, monthIndex, index + 1)
+    return { dateKey: localDateKey(date), entry: mergedEntries.get(localDateKey(date)) }
+  })
   return <section className="streak-calendar" aria-label="Check-in streak calendar">
     <div className="streak-rings" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
-    <header className="streak-calendar__header"><button type="button">VIEW DETAILS</button><h2>{month}</h2></header>
-    <div className="streak-calendar__days">{days.map((entry, index) => <CalendarCheck key={dateKeyDaysAgo(27 - index)} mood={entry?.mood} />)}</div>
+    <header className="streak-calendar__header"><h2>{month}</h2></header>
+    <div className="streak-calendar__days">{Array.from({ length: firstWeekday }, (_, index) => <div className="streak-day streak-day--spacer" key={`spacer-${index}`} aria-hidden="true" />)}{days.map(({ dateKey, entry }) => <CalendarCheck key={dateKey} mood={entry?.mood} />)}</div>
     <footer><strong>{streak}-Day Streak!</strong>{streak >= 3 && <span>YOU&apos;RE KILLING IT</span>}</footer>
   </section>
 }
@@ -88,7 +95,13 @@ export default function HomePage() {
   const { user } = useAuth()
   const [, setCheckinVersion] = useState(0)
   const [sos, setSos] = useState(false)
+  const [calendarNow, setCalendarNow] = useState(() => new Date())
   useEffect(() => subscribeToCheckins(user.id, () => setCheckinVersion((version) => version + 1)), [user.id])
+  useEffect(() => {
+    const untilTomorrow = new Date(calendarNow.getFullYear(), calendarNow.getMonth(), calendarNow.getDate() + 1).getTime() - Date.now()
+    const timeout = window.setTimeout(() => setCalendarNow(new Date()), untilTomorrow)
+    return () => window.clearTimeout(timeout)
+  }, [calendarNow])
   const today = getTodayEntry(user.id)
   const entries = getRecentEntries(user.id)
 
@@ -113,7 +126,7 @@ export default function HomePage() {
         </section>
 
         <aside className="dashboard-v2__right">
-          <StreakCalendar entries={entries} />
+          <StreakCalendar entries={entries} now={calendarNow} />
           <div className="dashboard-controls"><Link className="settings-link settings-link--v2" to="/settings"><span>SETTINGS</span><i aria-hidden="true">⚙</i></Link><button className="sos-button sos-button--v2" onClick={() => setSos(true)}>SOS</button></div>
         </aside>
       </div>
