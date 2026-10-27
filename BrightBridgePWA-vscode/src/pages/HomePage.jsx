@@ -39,8 +39,9 @@ function sampleCalendarEntries() {
   }).filter(Boolean)
 }
 
-function CalendarCheck({ mood }) {
-  return <div className={`streak-day${mood ? ' streak-day--complete' : ''}`}>
+function CalendarCheck({ day, mood, isToday }) {
+  return <div className={`streak-day${mood ? ' streak-day--complete' : ''}${isToday ? ' streak-day--today' : ''}`}>
+    <span className="streak-day__number">{day}</span>
     {mood && <svg viewBox="0 0 36 36" aria-hidden="true"><circle cx="18" cy="18" r="15" /><path d="M10 18 L16 24 L27 11" /></svg>}
     {mood && <span className={`streak-mood streak-mood--${mood}`} />}
   </div>
@@ -65,12 +66,13 @@ function StreakCalendar({ entries, now }) {
   const month = now.toLocaleDateString(undefined, { month: 'long' })
   const days = Array.from({ length: daysInMonth }, (_, index) => {
     const date = new Date(year, monthIndex, index + 1)
-    return { dateKey: localDateKey(date), entry: mergedEntries.get(localDateKey(date)) }
+    const dateKey = localDateKey(date)
+    return { dateKey, day: index + 1, entry: mergedEntries.get(dateKey) }
   })
   return <section className="streak-calendar" aria-label="Check-in streak calendar">
     <div className="streak-rings" aria-hidden="true">{Array.from({ length: 9 }, (_, index) => <i key={index} />)}</div>
     <header className="streak-calendar__header"><h2>{month}</h2></header>
-    <div className="streak-calendar__days">{Array.from({ length: firstWeekday }, (_, index) => <div className="streak-day streak-day--spacer" key={`spacer-${index}`} aria-hidden="true" />)}{days.map(({ dateKey, entry }) => <CalendarCheck key={dateKey} mood={entry?.mood} />)}</div>
+    <div className="streak-calendar__days">{Array.from({ length: firstWeekday }, (_, index) => <div className="streak-day streak-day--spacer" key={`spacer-${index}`} aria-hidden="true" />)}{days.map(({ dateKey, day, entry }) => <CalendarCheck key={dateKey} day={day} mood={entry?.mood} isToday={dateKey === localDateKey(now)} />)}</div>
     <footer><strong>{streak}-Day Streak!</strong>{streak >= 3 && <span>YOU&apos;RE KILLING IT</span>}</footer>
   </section>
 }

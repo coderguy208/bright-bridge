@@ -1201,6 +1201,9 @@
 .streak-day { position: relative; display: grid; width: 100%; aspect-ratio: 1; place-items: center; background: #8b4f7d; border-radius: clamp(.55rem, .68vw, .9rem); opacity: .38; }
 .streak-day--spacer { visibility: hidden; pointer-events: none; }
 .streak-day--complete { opacity: 1; }
+.streak-day--today { outline: 3px solid #f5e6e0; outline-offset: 2px; }
+.streak-day__number { position: absolute; top: clamp(.25rem, .42vw, .5rem); left: clamp(.3rem, .5vw, .6rem); color: #4d2d4a; font-family: var(--font-serif); font-size: clamp(10px, .78vw, 14px); font-weight: 700; line-height: 1; }
+.streak-day--complete .streak-day__number { color: #fff9ef; }
 .streak-day svg { width: 55%; height: 55%; fill: none; stroke: #000; stroke-linecap: round; stroke-linejoin: round; stroke-width: 3; transform: rotate(-5deg); }
 .streak-mood { position: absolute; right: -12%; bottom: -12%; width: 34%; aspect-ratio: 1; border: 3px solid #000; border-radius: 50%; }
 .streak-mood--red { background: #a33a3a; }.streak-mood--yellow { background: #f5c45e; }.streak-mood--green { background: #6cb86a; }
