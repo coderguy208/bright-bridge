@@ -10,18 +10,16 @@ import calmRoomImg from '../assets/icons/calm-room.png'
 export const SHOW_SAMPLE_CALENDAR_FOR_DEV = true
 
 const resourceLinks = [
-  { label: 'Grounding Tools', to: '/resources/grounding-tools', tone: 'grounding' },
-  { label: 'Conflict De-escalation', to: '/resources/conflict-deescalation', tone: 'conflict' },
-  { label: 'Relationship Microskills', to: '/resources/relationship-microskills', tone: 'microskills' },
+  { id: 'grounding', label: 'Grounding Tools', tone: 'grounding' },
+  { id: 'conflict', label: 'Conflict De-escalation', tone: 'conflict' },
+  { id: 'microskills', label: 'Relationship Microskills', tone: 'microskills' },
 ]
 
 const dashboardResourceTiles = [
-  { id: 'grounding', to: '/resources/grounding-tools' },
-  { id: 'conflict', to: '/resources/conflict-deescalation' },
-  { id: 'microskills', to: '/resources/relationship-microskills' },
+  { id: 'grounding' },
+  { id: 'conflict' },
+  { id: 'microskills' },
 ]
-resourceLinks.forEach((resource) => { resource.to = resourceIcons[resource.tone].to })
-dashboardResourceTiles.forEach((resource) => { resource.to = resourceIcons[resource.id].to })
 
 function dateKeyDaysAgo(daysAgo) {
   const date = new Date()
@@ -71,9 +69,9 @@ function StreakCalendar({ entries }) {
 }
 
 function DashboardIconTiles() {
-  return <div className="dash-icons">{dashboardResourceTiles.map(({ id, to }) => {
+  return <div className="dash-icons">{dashboardResourceTiles.map(({ id }) => {
     const icon = resourceIcons[id]
-    return <Link key={id} to={to}><img src={icon.src} alt={icon.alt} width={icon.width} height={icon.height} /></Link>
+    return <Link key={id} to={icon.to} state={{ from: '/home' }}><img src={icon.src} alt={icon.alt} width={icon.width} height={icon.height} /></Link>
   })}</div>
 }
 
@@ -110,7 +108,7 @@ export default function HomePage() {
         </section>
 
         <section className="dashboard-v2__middle">
-          <div className="dashboard-resource-links">{resourceLinks.map((item) => <Link key={item.label} className={`resource-link resource-link--${item.tone}`} to={item.to}>{item.label}</Link>)}</div>
+          <div className="dashboard-resource-links">{resourceLinks.map((item) => <Link key={item.id} className={`resource-link resource-link--${item.tone}`} to={resourceIcons[item.id].to} state={{ from: '/home' }}>{item.label}</Link>)}</div>
           <div className="picture-panel picture-panel--room"><img src={calmRoomImg} alt="Cozy room with a sunset window, bookshelf, armchair, plant, and a small character" width="644" height="268" /></div>
         </section>
 
